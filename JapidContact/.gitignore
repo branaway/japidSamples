@@ -4,3 +4,8 @@ modules/
 /lib
 /.apt_generated
 /apt_generated
+/eclipse/
+/.settings/
+/.classpath
+/.factorypath
+/.project

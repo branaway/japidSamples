@@ -1,3 +1,8 @@
 /logs
 /test-result
 /tmp
+/project/
+/precompiled/
+/eclipse/
+/.classpath
+/.project
