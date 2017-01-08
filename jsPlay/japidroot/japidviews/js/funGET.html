@@ -1,0 +1,14 @@
+`(String s, Map<String, Object> jso)
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>$s</title>
+</head>
+<body>
+`for (String k : jso.keySet()) {
+    <p><em>$k</em> : ${jso.get(k)}</p> 
+`}
+</body>
+</html>
