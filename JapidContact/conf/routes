@@ -1,0 +1,18 @@
+# Routes see https://www.playframework.com/documentation/1.2.5/routes#syntax
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+# Map static resources from the /app/public folder to the /public path
+GET     /public/                                 staticDir:public
+
+# Home page
+GET     /                                       Application.index
+GET     /contacts                               Application.list
+POST    /contacts                               Application.save
+GET     /contacts/{id}                          Application.form
+GET     /contacts/new                           Application.newform
+
+GET       /Odata/getAll/{modelName}    Odata.getAll
+GET       /Odata/getOne/{modelName}     Odata.getOne
+*       /Application/saveRecord/{modelName}     Application.saveRecord
+*       /{controller}/{action}                  {controller}.{action}
+

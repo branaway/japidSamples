@@ -1,0 +1,52 @@
+Contact(warry):
+    name:       Dantec
+    firstname:  Maxime
+    birthdate:  1985-11-12
+    email:      hello@warry.fr
+
+Contact(guillaume):
+    name:       Bort
+    firstname:  Guillaume
+    birthdate:  1980-12-21
+    email:      guillaume.bort@gmail.com
+
+Contact(たの):
+    name:       鈴木
+    firstname:  太郎
+    birthdate:  1970-05-13
+    email:      contact@japan.com
+    
+Book(The Shawshank Redemption):
+  title: The Shawshank Redemption
+  year: 1993
+  votes: 234234
+  rating: 9.2
+  rank: 1
+  
+Book(The Godfather):
+  title: The Godfather
+  year: 1972
+  votes: 2334
+  rating: 9.2
+  rank: 2
+
+Book(The Godfather II):
+  title: The Godfather II
+  year: 1975
+  votes: 23343
+  rating: 9.0
+  rank: 3
+  
+Book(The Good):
+  title: The Good
+  year: 1943
+  votes: 233
+  rating: 8.5
+  rank: 4
+
+Book(My Fair Lady):
+  title: My Fair Lady
+  year: 1966
+  votes: 2345
+  rating: 8.2
+  rank: 5
