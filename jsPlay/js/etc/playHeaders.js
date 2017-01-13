@@ -13,7 +13,7 @@ var RenderError = Java.type("play.mvc.results.Error");
 var NotFound = Java.type("play.mvc.results.NotFound"); 
 var RenderJapid = Java.type("etc.RenderJapid"); 
 var RenderJackson = Java.type("etc.RenderJackson"); 
-var Request = Java.type("play.mvc.Http.Request"); 
+
 
 function ok() {new Ok()}
 function renderJson(o) {return new RenderJson(o);}
@@ -26,3 +26,24 @@ function renderFile(o) {return new RenderFile(o);}
 function renderError(o) {return new RenderError(o);}
 function redirect(o) {return new Redirect(o);}
 function renderJapid() {return new RenderJapid(arguments);}
+
+var Request = Java.type("play.mvc.Http.Request"); 
+
+var JavaUtils = Java.type("etc.JavaUtils");
+
+var request = Request.current();
+
+var params = request.params.data; // a Map object
+
+/**
+ * parse out function parameter names
+ */
+var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+var ARGUMENT_NAMES = /([^\s,]+)/g;
+function getParamNames(func) {
+  var fnStr = func.toString().replace(STRIP_COMMENTS, '');
+  var result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+  if(result === null)
+     result = [];
+  return result;
+}

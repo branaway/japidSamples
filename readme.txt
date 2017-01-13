@@ -1,6 +1,6 @@
 Japid Samples
 
-This project contains 2 Japid sample projects.
+This project contains a few Japid sample projects.
 
 All the views are in the japidroot directory.
 

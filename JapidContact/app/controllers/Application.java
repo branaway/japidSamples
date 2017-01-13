@@ -9,7 +9,6 @@ import play.data.validation.Valid;
 import play.mvc.results.Error;
 
 public class Application extends JapidController {
-
 	public static void index() {
 		Date now = new Date();
 		renderJapid(now);

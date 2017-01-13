@@ -16,12 +16,12 @@ import japidviews._layouts.*;
 import models.*;
 import play.mvc.Http.*;
 //
-// NOTE: This file was generated from: japidviews/js/funGET.html
+// NOTE: This file was generated from: japidviews/js/funPOST.html
 // Change to this file will be lost next time the template file is compiled.
 //
-public class funGET extends cn.bran.play.JapidTemplateBase
+public class funPOST extends cn.bran.play.JapidTemplateBase
 {
-	public static final String sourceTemplate = "japidviews/js/funGET.html";
+	public static final String sourceTemplate = "japidviews/js/funPOST.html";
 	 private void initHeaders() {
 		putHeader("Content-Type", "text/html; charset=utf-8");
 		setContentType("text/html; charset=utf-8");
@@ -43,24 +43,24 @@ public class funGET extends cn.bran.play.JapidTemplateBase
 // - end of implicit fields with Play 
 
 
-	public funGET() {
+	public funPOST() {
 	super((StringBuilder)null);
 	initHeaders();
 	}
-	public funGET(StringBuilder out) {
+	public funPOST(StringBuilder out) {
 		super(out);
 		initHeaders();
 	}
-	public funGET(cn.bran.japid.template.JapidTemplateBaseWithoutPlay caller) {
+	public funPOST(cn.bran.japid.template.JapidTemplateBaseWithoutPlay caller) {
 		super(caller);
 	}
 
 /* based on https://github.com/branaway/Japid/issues/12
  */
 	public static final String[] argNames = new String[] {/* args of the template*/"s", "jso",  };
-	public static final String[] argTypes = new String[] {/* arg types of the template*/"Integer", "Map<String, Object>",  };
+	public static final String[] argTypes = new String[] {/* arg types of the template*/"String", "Map<String, Object>",  };
 	public static final Object[] argDefaults= new Object[] {null,null, };
-	public static java.lang.reflect.Method renderMethod = getRenderMethod(japidviews.js.funGET.class);
+	public static java.lang.reflect.Method renderMethod = getRenderMethod(japidviews.js.funPOST.class);
 
 	{
 		setRenderMethod(renderMethod);
@@ -71,40 +71,40 @@ public class funGET extends cn.bran.play.JapidTemplateBase
 	}
 ////// end of named args stuff
 
-	private Integer s; // line 1, japidviews/js/funGET.html
-	private Map<String, Object> jso; // line 1, japidviews/js/funGET.html
-	public cn.bran.japid.template.RenderResult render(Integer s,Map<String, Object> jso) {
+	private String s; // line 1, japidviews/js/funPOST.html
+	private Map<String, Object> jso; // line 1, japidviews/js/funPOST.html
+	public cn.bran.japid.template.RenderResult render(String s,Map<String, Object> jso) {
 		this.s = s;
 		this.jso = jso;
-		try {super.layout();} catch (RuntimeException __e) { super.handleException(__e);} // line 1, japidviews/js/funGET.html
+		try {super.layout();} catch (RuntimeException __e) { super.handleException(__e);} // line 1, japidviews/js/funPOST.html
 		return getRenderResult();
 	}
 
-	public static cn.bran.japid.template.RenderResult apply(Integer s,Map<String, Object> jso) {
-		return new funGET().render(s, jso);
+	public static cn.bran.japid.template.RenderResult apply(String s,Map<String, Object> jso) {
+		return new funPOST().render(s, jso);
 	}
 
 	@Override protected void doLayout() {
 		beginDoLayout(sourceTemplate);
-;// line 1, funGET.html
+;// line 1, funPOST.html
 		p("<!DOCTYPE html>\n" + 
 "<html>\n" + 
 "<head>\n" + 
 "<meta charset=\"UTF-8\">\n" + 
-"<title>");// line 1, funGET.html
-		p(s);// line 7, funGET.html
+"<title>");// line 1, funPOST.html
+		p(s);// line 7, funPOST.html
 		p("</title>\n" + 
 "</head>\n" + 
-"<body>\n");// line 7, funGET.html
-		for (String k : jso.keySet()) {// line 10, funGET.html
-		p("    <p><em>");// line 10, funGET.html
-		p(k);// line 11, funGET.html
-		p("</em> : ");// line 11, funGET.html
-		p(jso.get(k));// line 11, funGET.html
-		p("</p> \n");// line 11, funGET.html
-		}// line 12, funGET.html
+"<body>\n");// line 7, funPOST.html
+		for (String k : jso.keySet()) {// line 10, funPOST.html
+		p("    <p><em>");// line 10, funPOST.html
+		p(k);// line 11, funPOST.html
+		p("</em> : ");// line 11, funPOST.html
+		p(jso.get(k));// line 11, funPOST.html
+		p("</p> \n");// line 11, funPOST.html
+		}// line 12, funPOST.html
 		p("</body>\n" + 
-"</html>");// line 12, funGET.html
+"</html>");// line 12, funPOST.html
 		
 		endDoLayout(sourceTemplate);
 	}
