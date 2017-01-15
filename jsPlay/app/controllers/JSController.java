@@ -71,7 +71,7 @@ public class JSController extends cn.bran.play.JapidController {
 			try {
 //				engine.eval(new FileReader(PLAY_HEADERS_JS));
 				engine.eval("load('" + PLAY_HEADERS_JS  + "');");
-				updateModelsHeader();
+				_updateModelsHeader();
 //				engine.eval(new FileReader(MODEL_HEADERS_JS));
 				engine.eval("load('" + MODEL_HEADERS_JS  + "');");
 
@@ -105,7 +105,7 @@ public class JSController extends cn.bran.play.JapidController {
 		// extension
 		String fileName = jsRoot + "/" + _module + ".js";
 		File rawFile = new File(fileName);
-		if (!rawFile.exists()) {
+		if (Play.mode.isDev() && !rawFile.exists()) {
 			notFound(fileName);
 		}
 
@@ -136,7 +136,11 @@ public class JSController extends cn.bran.play.JapidController {
 			}
 			
 //			Object[] args = processParams((FunctionInfo) engine.get(_module + "." + _method));
-			Object[] args = processParams((FunctionInfo) module.getMember(_method + _PARAMS));
+			Object methParams = module.getMember(_method + _PARAMS);
+			if (methParams instanceof Undefined) {
+				error(_method + " parameter information was not stored in the engine");
+			}
+			Object[] args = processParams((FunctionInfo) methParams);
 
 			Object r = ((JSObject) member).call(null, args);
 			//
@@ -249,6 +253,7 @@ public class JSController extends cn.bran.play.JapidController {
 		} else {
 			JSObject module = (JSObject) engine.get(moduleName);
 			if (module == null) {
+				evaluate(engine, rawFile);
 				module = parserModule(moduleName, engine);
 			}
 			return module;

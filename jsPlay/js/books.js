@@ -38,7 +38,7 @@ var books = function() {
 			else
 				return notFound(id);
 		},
-		newBook : newBook1,
+		newBook : newBook,
 		optionCoerceArgs : true, // not used. use
 									// jscontroller.coerce.args=true in
 									// application.conf
