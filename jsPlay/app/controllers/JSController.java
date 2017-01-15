@@ -69,15 +69,18 @@ public class JSController extends cn.bran.play.JapidController {
 		ScriptEngine engine = new NashornScriptEngineFactory().getScriptEngine(options);
 		if (Play.mode.isProd())
 			try {
-				engine.eval(new FileReader(PLAY_HEADERS_JS));
+//				engine.eval(new FileReader(PLAY_HEADERS_JS));
+				engine.eval("load('" + PLAY_HEADERS_JS  + "');");
 				updateModelsHeader();
-				engine.eval(new FileReader(MODEL_HEADERS_JS));
+//				engine.eval(new FileReader(MODEL_HEADERS_JS));
+				engine.eval("load('" + MODEL_HEADERS_JS  + "');");
 
-			} catch (ScriptException | FileNotFoundException e) {
+			} catch (ScriptException  e) {
 				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			} 
+//			catch (IOException e) {
+//				e.printStackTrace();
+//			}
 		return engine;
 	});
 
@@ -233,7 +236,7 @@ public class JSController extends cn.bran.play.JapidController {
 			if (modelsFile.exists()) {
 //				engine.eval(new FileReader(modelsFile));
 				// let's see if we can keep the file name in the compiled classes 
-				engine.eval("load('" + modelsFile + "');");
+				engine.eval("load('" + MODEL_HEADERS_JS + "');");
 			}
 			// parse the header
 //			engine.eval(new FileReader(PLAY_HEADERS_JS));
