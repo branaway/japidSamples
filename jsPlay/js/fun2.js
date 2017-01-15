@@ -1,7 +1,3 @@
-/**
- * 
- */
-
 
 // the name must match that of this source file
 var fun2 = function() {
@@ -12,7 +8,7 @@ var fun2 = function() {
 		print('p3 -> ' + p3);
 	 return renderText('hi...' + request.url + ". arguments: " + arguments[1]);
 	// return ok();
-//	 return notFound(request.url);
+//	 return notFound(request.url);1
 //	 return renderJackson({a:1, b:"b-value", c: Date()});
 //		return renderJapid(p1, {a:1, b:p2, c: Date()});
 	}
@@ -42,7 +38,7 @@ var fun2 = function() {
 	}
 	
 	return {
-		GET: GET,
+		GET: GET1,
 		POST: POST,
 		coerceArgs: true
 	}

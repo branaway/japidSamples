@@ -12,7 +12,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.script.Compilable;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -21,6 +23,7 @@ import javax.script.ScriptException;
 
 import org.apache.commons.lang.math.NumberUtils;
 
+import etc.NashornExecutionException;
 import etc.NashornTool;
 import etc.NashornTool.FunctionInfo;
 import etc.RenderJackson;
@@ -28,18 +31,22 @@ import etc.RenderJapid;
 import jdk.nashorn.api.scripting.JSObject;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.internal.runtime.ECMAException;
 import jdk.nashorn.internal.runtime.Undefined;
 import play.Play;
 import play.Play.Mode;
 import play.db.jpa.Model;
+import play.exceptions.CompilationException;
 import play.mvc.Http.Request;
 import play.mvc.Scope.Params;
 import play.mvc.results.RenderJson;
 import play.mvc.results.Result;
 import play.utils.Utils;
 import play.utils.Utils.AlternativeDateFormat;
+import play.vfs.VirtualFile;
 
 public class JSController extends cn.bran.play.JapidController {
+	private static final String _PARAMS = "_params";
 	public static String jsRoot = "js";
 	private static boolean shouldCoerceArg = Boolean
 			.parseBoolean(Play.configuration.getProperty("jscontroller.coerce.args", "false"));
@@ -74,62 +81,6 @@ public class JSController extends cn.bran.play.JapidController {
 		return engine;
 	});
 
-	/**
-	 * the gateway to the JavaScript engine. The action is determined by the request method. 
-	 * 
-	 * 
-	 * @param _jsfile
-	 *            the JS file to invoke to process the request
-	 * 
-	 * @throws NoSuchMethodException
-	 * @Deprecated use the process2 entry point. 
-	 */
-	@Deprecated
-	public static void process(String _jsfile) throws NoSuchMethodException {
-		ScriptEngine engine = engineHolder.get();
-		if (_jsfile.endsWith(".js"))
-			_jsfile += _jsfile.substring(0, _jsfile.lastIndexOf(".js"));
-		// get
-		// file
-		// name
-		// without
-		// extension
-		try {
-			String fileName = jsRoot + "/" + _jsfile + ".js";
-			File rawFile = new File(fileName);
-			if (!rawFile.exists()) {
-				notFound(fileName);
-			}
-
-			JSObject module = getModule(_jsfile, engine, rawFile);
-
-			Object[] args = processParams((FunctionInfo) engine.get(_jsfile + "." + request.method));
-
-			// method one:
-			Object r = ((JSObject) module.getMember(request.method)).call(null, args);
-			//
-			// method two: this method use the engine and call top level
-			// function.
-			// this is to invoke method on object
-			// Object r = ((Invocable) engine).invokeMethod(module,
-			// request.method, args);
-
-			if (r instanceof RenderJapid) {
-				RenderJapid rj = (RenderJapid) r;
-				renderJapidWith(jsRoot + "/" + _jsfile + request.method, rj.args);
-			} else if (r instanceof Result) {
-				throw (Result) r;
-			} else {
-				renderText(r);
-			}
-		} catch (FileNotFoundException e) {
-			notFound(_jsfile);
-		} catch (ScriptException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			error(e);
-		}
-	}
 
 	/**
 	 * 
@@ -139,7 +90,8 @@ public class JSController extends cn.bran.play.JapidController {
 	 *            the method of the module to invoke
 	 * @throws NoSuchMethodException
 	 */
-	public static void process2(String _module, String _method) throws NoSuchMethodException {
+	public static void process(String _module, String _method) throws NoSuchMethodException {
+		
 		ScriptEngine engine = engineHolder.get();
 		if (_module.endsWith(".js"))
 			_module += _module.substring(0, _module.lastIndexOf(".js"));
@@ -148,25 +100,40 @@ public class JSController extends cn.bran.play.JapidController {
 		// name
 		// without
 		// extension
-		try {
-			String fileName = jsRoot + "/" + _module + ".js";
-			File rawFile = new File(fileName);
-			if (!rawFile.exists()) {
-				notFound(fileName);
-			}
+		String fileName = jsRoot + "/" + _module + ".js";
+		File rawFile = new File(fileName);
+		if (!rawFile.exists()) {
+			notFound(fileName);
+		}
 
-			JSObject var = getModule(_module, engine, rawFile);
+		try {
+
+			JSObject module = getModule(_module, engine, rawFile);
 
 			// not implemented yet
 			// Object optionCoerceArgsMember =
 			// var.getMember("optionCoerceArgs");
 
 			// method one:
-			Object member = var.getMember(_method);
+			Object member = module.getMember(_method);
 			if (member instanceof Undefined) {
 				notFound("methd not found in the module: " + _module + "." + _method);
 			}
-			Object[] args = processParams((FunctionInfo) engine.get(_module + "." + _method));
+			
+			Object before = module.getMember("_before");
+			if (before instanceof JSObject) {
+				// call the interceptor with the method name
+				Object itorResult = ((JSObject)before).call(null, _method);
+				if (itorResult instanceof RenderJapid) {
+					RenderJapid rj = (RenderJapid) itorResult;
+					renderJapidWith(jsRoot + "/" + _module + "/" + "_before", rj.args);
+				} else if (itorResult instanceof Result) {
+					throw (Result) itorResult;
+				}
+			}
+			
+//			Object[] args = processParams((FunctionInfo) engine.get(_module + "." + _method));
+			Object[] args = processParams((FunctionInfo) module.getMember(_method + _PARAMS));
 
 			Object r = ((JSObject) member).call(null, args);
 			//
@@ -188,11 +155,63 @@ public class JSController extends cn.bran.play.JapidController {
 			notFound(_module);
 		} catch (ScriptException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-			error(e);
+			convertToPlayCompilationError(fileName, e);
+		} catch(ECMAException e) {
+//			Object t = e.getThrown();
+			convertToPlayCompilationError(fileName, e);
+		} catch (IllegalArgumentException e) {
+//			e.printStackTrace();
+			// need to parser the line like:
+			// 	at jdk.nashorn.internal.scripts.Script$Recompilation$24$535A$\^eval\_.books$getBookById-1(<eval>:32)
+			List<StackTraceElement> goodLines = Arrays.stream(e.getStackTrace())
+			.filter( st -> st.toString().contains("scripts.Script$"))
+			.collect(Collectors.toList());
+			if (goodLines.size() > 0) {
+				StackTraceElement ste = goodLines.get(0);
+				Integer lineNum = ste.getLineNumber();
+				String fname = ste.getFileName();
+				if ("<eval>".equals(fname)){
+					fname = fileName;
+				}
+				String tempName = fname; 
+				VirtualFile vf = VirtualFile.fromRelativePath(tempName);
+				NashornExecutionException ce = new NashornExecutionException(vf, "\"" + e.getMessage() + "\"", lineNum, 0, 0);
+				throw ce;
+			}
+			else {
+				throw e;
+			}
 		}
 	}
 
+	private static void convertToPlayCompilationError(String fileName, ECMAException e) {
+		String fname = e.getFileName();
+		if ("<eval>".equals(fname)){
+			fname = fileName;
+		}
+		int line = e.getLineNumber();
+		int col = e.getColumnNumber();
+//			Object ecmaError = e.getEcmaError();
+		String tempName = fname; 
+		VirtualFile vf = VirtualFile.fromRelativePath(tempName);
+		NashornExecutionException ce = new NashornExecutionException(vf, "\"" + e.getMessage() + "\"", line, col, col + 1);
+		throw ce;
+	}
+
+	private static void convertToPlayCompilationError(String fileName, ScriptException e) {
+		String fname = e.getFileName();
+		if ("<eval>".equals(fname)){
+			fname = fileName;
+		}
+		int line = e.getLineNumber();
+		int col = e.getColumnNumber();
+//			Object ecmaError = e.getEcmaError();
+		String tempName = fname; 
+		VirtualFile vf = VirtualFile.fromRelativePath(tempName);
+		CompilationException ce = new CompilationException(vf, "\"" + e.getMessage() + "\"", line, col, col + 1);
+		throw ce;
+	}
+	
 	/**
 	 * assuming module definition in the js file: var _jsfile = function()
 	 * {function GET(){} function POST{} return {GET:GET, POST:POST}}()
@@ -211,10 +230,14 @@ public class JSController extends cn.bran.play.JapidController {
 		if (Play.mode.isDev()) {
 			_updateModelsHeader();
 			File modelsFile = new File(MODEL_HEADERS_JS);
-			if (modelsFile.exists())
-				engine.eval(new FileReader(modelsFile));
+			if (modelsFile.exists()) {
+//				engine.eval(new FileReader(modelsFile));
+				// let's see if we can keep the file name in the compiled classes 
+				engine.eval("load('" + modelsFile + "');");
+			}
 			// parse the header
-			engine.eval(new FileReader(PLAY_HEADERS_JS));
+//			engine.eval(new FileReader(PLAY_HEADERS_JS));
+			engine.eval("load('" + PLAY_HEADERS_JS  + "');");
 			// remove old definition
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).remove(moduleName);
 			evaluate(engine, rawFile);
@@ -247,10 +270,23 @@ public class JSController extends cn.bran.play.JapidController {
 			if (member instanceof ScriptObjectMirror && ((ScriptObjectMirror) member).isFunction()) {
 				String funcSource = member.toString();
 				List<FunctionInfo> funcs = NashornTool.extractFuncs(k, funcSource);
-				FunctionInfo fi = funcs.get(0);
-				// store the method signature in the engine scope
-				// key by <modulename>.<method name>
-				engine.put(moduleName + "." + k, fi);
+				if (funcs.size() > 0) {
+					FunctionInfo fi = funcs.get(0);
+					// store the method signature in the engine scope
+					// key by <modulename>.<method name>
+					module.setMember(k + _PARAMS, fi);
+//					engine.put(moduleName + "." + k, fi);
+				}
+				else{
+					// might be an inline function
+					FunctionInfo extractAnonymous = NashornTool.extractAnonymous(funcSource);
+					if (extractAnonymous != null){
+						module.setMember(k + _PARAMS, extractAnonymous);
+					}
+					else {
+						throw new RuntimeException("could not identify the parameter pattern: " + funcSource);
+					}
+				}
 			}
 		});
 	}
@@ -295,7 +331,8 @@ public class JSController extends cn.bran.play.JapidController {
 		final long start = System.currentTimeMillis();
 		try {
 			if (url instanceof File) {
-				return engine.eval(new FileReader((File) url));
+//				return engine.eval(new FileReader((File) url));
+				return engine.eval("load('" + ((File) url).getPath() + "');");
 			} else if (url instanceof String) {
 				return engine.eval((String) url);
 			} else
