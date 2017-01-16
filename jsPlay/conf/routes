@@ -13,8 +13,7 @@ GET     /favicon.ico                            404
 GET     /public/                                staticDir:public
 
 # javascript
-*     /js/{_module}/{_method}             JSController.process2
-*     /js/{<[^/]+>_jsfile}             JSController.process
+*     /js/{_module}/{_method}             JSController.process
 
 
 # Catch all

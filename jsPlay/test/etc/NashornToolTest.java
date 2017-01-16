@@ -31,4 +31,28 @@ public class NashornToolTest {
 		assertEquals("b", pss.get(0).parameterNames.get(1));
 	}
 	
+	@Test
+	public void testAnonymous() {
+		FunctionInfo fi = NashornTool.extractAnonymous("function(a, b){}");
+		assertEquals("anonymous", fi.name);
+		assertEquals(2, fi.parameterNames.size());
+		assertEquals("a", fi.parameterNames.get(0));
+		assertEquals("b", fi.parameterNames.get(1));
+	}
+	
+	@Test
+	public void testAnonymous2() {
+		FunctionInfo fi = NashornTool.extractAnonymous("function  (id) {}");
+		assertEquals("<anonymous>", fi.name);
+		assertEquals(1, fi.parameterNames.size());
+		assertEquals("id", fi.parameterNames.get(0));
+	}
+	
+	@Test
+	public void testAst() {
+		String code = "function(a, b) {var a = 1;}";
+		String json = NashornTool.getAst(code);
+		System.out.println(json);
+	}
+	
 }
