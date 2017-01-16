@@ -11,9 +11,13 @@ var books = function() {
 
 	function newBook(title, year) {
 		var book = new Book();
-		book.title = title;
-		book.year = year;
+		if (title)
+			book.title = title;
+		if(year)
+			book.year = year;
+		
 		book.save();
+
 		return renderJson({
 			errorcode : 0,
 			data : book
