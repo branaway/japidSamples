@@ -27,12 +27,7 @@ var books = function() {
 	return {
 		all : all,
 		getBookById : function(id) {
-//			return foo(id);
-			var book = Book.findById(id);
-			if (book)
-				return renderJapid(1, book); //the template is"japidroot/japidviews/js/books/getBookById.html"
-			else
-				return renderText("ooops!");
+			return foo(id);
 		},
 		newBook : newBook,
 		optionCoerceArgs : true, // not used. use
