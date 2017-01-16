@@ -69,21 +69,20 @@ public class JSController extends cn.bran.play.JapidController {
 		ScriptEngine engine = new NashornScriptEngineFactory().getScriptEngine(options);
 		if (Play.mode.isProd())
 			try {
-//				engine.eval(new FileReader(PLAY_HEADERS_JS));
-				engine.eval("load('" + PLAY_HEADERS_JS  + "');");
+				// engine.eval(new FileReader(PLAY_HEADERS_JS));
+				engine.eval("load('" + PLAY_HEADERS_JS + "');");
 				_updateModelsHeader();
-//				engine.eval(new FileReader(MODEL_HEADERS_JS));
-				engine.eval("load('" + MODEL_HEADERS_JS  + "');");
+				// engine.eval(new FileReader(MODEL_HEADERS_JS));
+				engine.eval("load('" + MODEL_HEADERS_JS + "');");
 
-			} catch (ScriptException  e) {
+			} catch (ScriptException e) {
 				e.printStackTrace();
-			} 
-//			catch (IOException e) {
-//				e.printStackTrace();
-//			}
+			}
+		// catch (IOException e) {
+		// e.printStackTrace();
+		// }
 		return engine;
 	});
-
 
 	/**
 	 * 
@@ -94,7 +93,7 @@ public class JSController extends cn.bran.play.JapidController {
 	 * @throws NoSuchMethodException
 	 */
 	public static void process(String _module, String _method) throws NoSuchMethodException {
-		
+
 		ScriptEngine engine = engineHolder.get();
 		if (_module.endsWith(".js"))
 			_module += _module.substring(0, _module.lastIndexOf(".js"));
@@ -122,11 +121,11 @@ public class JSController extends cn.bran.play.JapidController {
 			if (member instanceof Undefined) {
 				notFound("methd not found in the module: " + _module + "." + _method);
 			}
-			
+
 			Object before = module.getMember("_before");
 			if (before instanceof JSObject) {
 				// call the interceptor with the method name
-				Object itorResult = ((JSObject)before).call(null, _method);
+				Object itorResult = ((JSObject) before).call(null, _method);
 				if (itorResult instanceof RenderJapid) {
 					RenderJapid rj = (RenderJapid) itorResult;
 					renderJapidWith(jsRoot + "/" + _module + "/" + "_before", rj.args);
@@ -134,8 +133,9 @@ public class JSController extends cn.bran.play.JapidController {
 					throw (Result) itorResult;
 				}
 			}
-			
-//			Object[] args = processParams((FunctionInfo) engine.get(_module + "." + _method));
+
+			// Object[] args = processParams((FunctionInfo) engine.get(_module +
+			// "." + _method));
 			Object methParams = module.getMember(_method + _PARAMS);
 			if (methParams instanceof Undefined) {
 				error(_method + " parameter information was not stored in the engine");
@@ -163,29 +163,29 @@ public class JSController extends cn.bran.play.JapidController {
 		} catch (ScriptException e) {
 			// TODO Auto-generated catch block
 			convertToPlayCompilationError(fileName, e);
-		} catch(ECMAException e) {
-//			Object t = e.getThrown();
+		} catch (ECMAException e) {
+			// Object t = e.getThrown();
 			convertToPlayCompilationError(fileName, e);
 		} catch (IllegalArgumentException e) {
-//			e.printStackTrace();
+			// e.printStackTrace();
 			// need to parser the line like:
-			// 	at jdk.nashorn.internal.scripts.Script$Recompilation$24$535A$\^eval\_.books$getBookById-1(<eval>:32)
+			// at
+			// jdk.nashorn.internal.scripts.Script$Recompilation$24$535A$\^eval\_.books$getBookById-1(<eval>:32)
 			List<StackTraceElement> goodLines = Arrays.stream(e.getStackTrace())
-			.filter( st -> st.toString().contains("scripts.Script$"))
-			.collect(Collectors.toList());
+					.filter(st -> st.toString().contains("scripts.Script$")).collect(Collectors.toList());
 			if (goodLines.size() > 0) {
 				StackTraceElement ste = goodLines.get(0);
 				Integer lineNum = ste.getLineNumber();
 				String fname = ste.getFileName();
-				if ("<eval>".equals(fname)){
+				if ("<eval>".equals(fname)) {
 					fname = fileName;
 				}
-				String tempName = fname; 
+				String tempName = fname;
 				VirtualFile vf = VirtualFile.fromRelativePath(tempName);
-				NashornExecutionException ce = new NashornExecutionException(vf, "\"" + e.getMessage() + "\"", lineNum, 0, 0);
+				NashornExecutionException ce = new NashornExecutionException(vf, "\"" + e.getMessage() + "\"", lineNum,
+						0, 0);
 				throw ce;
-			}
-			else {
+			} else {
 				throw e;
 			}
 		}
@@ -193,32 +193,33 @@ public class JSController extends cn.bran.play.JapidController {
 
 	private static void convertToPlayCompilationError(String fileName, ECMAException e) {
 		String fname = e.getFileName();
-		if ("<eval>".equals(fname)){
+		if ("<eval>".equals(fname)) {
 			fname = fileName;
 		}
 		int line = e.getLineNumber();
 		int col = e.getColumnNumber();
-//			Object ecmaError = e.getEcmaError();
-		String tempName = fname; 
+		// Object ecmaError = e.getEcmaError();
+		String tempName = fname;
 		VirtualFile vf = VirtualFile.fromRelativePath(tempName);
-		NashornExecutionException ce = new NashornExecutionException(vf, "\"" + e.getMessage() + "\"", line, col, col + 1);
+		NashornExecutionException ce = new NashornExecutionException(vf, "\"" + e.getMessage() + "\"", line, col,
+				col + 1);
 		throw ce;
 	}
 
 	private static void convertToPlayCompilationError(String fileName, ScriptException e) {
 		String fname = e.getFileName();
-		if ("<eval>".equals(fname)){
+		if ("<eval>".equals(fname)) {
 			fname = fileName;
 		}
 		int line = e.getLineNumber();
 		int col = e.getColumnNumber();
-//			Object ecmaError = e.getEcmaError();
-		String tempName = fname; 
+		// Object ecmaError = e.getEcmaError();
+		String tempName = fname;
 		VirtualFile vf = VirtualFile.fromRelativePath(tempName);
 		CompilationException ce = new CompilationException(vf, "\"" + e.getMessage() + "\"", line, col, col + 1);
 		throw ce;
 	}
-	
+
 	/**
 	 * assuming module definition in the js file: var _jsfile = function()
 	 * {function GET(){} function POST{} return {GET:GET, POST:POST}}()
@@ -238,13 +239,14 @@ public class JSController extends cn.bran.play.JapidController {
 			_updateModelsHeader();
 			File modelsFile = new File(MODEL_HEADERS_JS);
 			if (modelsFile.exists()) {
-//				engine.eval(new FileReader(modelsFile));
-				// let's see if we can keep the file name in the compiled classes 
+				// engine.eval(new FileReader(modelsFile));
+				// let's see if we can keep the file name in the compiled
+				// classes
 				engine.eval("load('" + MODEL_HEADERS_JS + "');");
 			}
 			// parse the header
-//			engine.eval(new FileReader(PLAY_HEADERS_JS));
-			engine.eval("load('" + PLAY_HEADERS_JS  + "');");
+			// engine.eval(new FileReader(PLAY_HEADERS_JS));
+			engine.eval("load('" + PLAY_HEADERS_JS + "');");
 			// remove old definition
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).remove(moduleName);
 			evaluate(engine, rawFile);
@@ -283,15 +285,13 @@ public class JSController extends cn.bran.play.JapidController {
 					// store the method signature in the engine scope
 					// key by <modulename>.<method name>
 					module.setMember(k + _PARAMS, fi);
-//					engine.put(moduleName + "." + k, fi);
-				}
-				else{
+					// engine.put(moduleName + "." + k, fi);
+				} else {
 					// might be an inline function
 					FunctionInfo extractAnonymous = NashornTool.extractAnonymous(funcSource);
-					if (extractAnonymous != null){
+					if (extractAnonymous != null) {
 						module.setMember(k + _PARAMS, extractAnonymous);
-					}
-					else {
+					} else {
 						throw new RuntimeException("could not identify the parameter pattern: " + funcSource);
 					}
 				}
@@ -305,11 +305,15 @@ public class JSController extends cn.bran.play.JapidController {
 
 		return fi.parameterNames.stream().map(k -> {
 			String[] v = data.get(k);
-			if (v.length == 1) {
-				return coerceArg(v[0]); // unwrap single element array
+			if (v != null) {
+				if (v.length == 1) {
+					return coerceArg(v[0]); // unwrap single element array
+				} else {
+					// convert string to typed object
+					return Arrays.stream(v).map(ve -> coerceArg(ve)).toArray();
+				}
 			} else {
-				// convert string to typed object
-				return Arrays.stream(v).map(ve -> coerceArg(ve)).toArray();
+				return null;
 			}
 		}).toArray();
 	}
@@ -339,7 +343,7 @@ public class JSController extends cn.bran.play.JapidController {
 		final long start = System.currentTimeMillis();
 		try {
 			if (url instanceof File) {
-//				return engine.eval(new FileReader((File) url));
+				// return engine.eval(new FileReader((File) url));
 				return engine.eval("load('" + ((File) url).getPath() + "');");
 			} else if (url instanceof String) {
 				return engine.eval((String) url);

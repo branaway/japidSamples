@@ -18,7 +18,7 @@ public class Book extends Model {
     public String title;
     
     @Required
-    public String year;
+    public Integer year = 1000;
     
     @Required
     public Integer votes;

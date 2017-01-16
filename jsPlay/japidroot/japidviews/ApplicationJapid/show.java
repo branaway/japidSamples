@@ -90,8 +90,8 @@ public class show extends cn.bran.play.JapidTemplateBase
 		p("I'm ");// line 1, show.html
 		p(name);// line 2, show.html
 		p(". I'm ");// line 2, show.html
-		p(age);// line 2, show.html
-		p(" years old.");// line 2, show.html
+		try { Object o = escape(age); if (o.toString().length() ==0) { p(escape(null)); } else { p(o); } } catch (NullPointerException npe) { p(escape(null)); }// line 2, show.html
+		p("-year old.");// line 2, show.html
 		
 		endDoLayout(sourceTemplate);
 	}

@@ -9,14 +9,6 @@ var books = function() {
 		return renderJson(books);
 	}
 
-	function getBookById(id) {
-		var book = Book.findById(id);
-		if (book)
-			return renderJson(book);
-		else
-			return notFound(id);
-	}
-
 	function newBook(title, year) {
 		var book = new Book();
 		book.title = title;
@@ -34,9 +26,9 @@ var books = function() {
 //			return foo(id);
 			var book = Book.findById(id);
 			if (book)
-				return renderJson(book);
+				return renderJapid(1, book); //the template is"japidroot/japidviews/js/books/getBookById.html"
 			else
-				return notFound(id);
+				return renderText("ooops!");
 		},
 		newBook : newBook,
 		optionCoerceArgs : true, // not used. use
@@ -50,7 +42,7 @@ var books = function() {
 		_before : function(functionName) {
 			// do nothing to pass through
 			// or return something to reflow the action chain
-			// return forbidden(functionName);
+//			 return forbidden(functionName);
 //			return renderText("you don't have the right: " + functionName);
 		}
 

@@ -1,5 +1,5 @@
 //version: 0.9.6.2
-package japidviews.js;
+package japidviews.js.books;
 import java.util.*;
 import java.io.*;
 import cn.bran.japid.tags.Each;
@@ -16,12 +16,12 @@ import japidviews._layouts.*;
 import models.*;
 import play.mvc.Http.*;
 //
-// NOTE: This file was generated from: japidviews/js/funGET.html
+// NOTE: This file was generated from: japidviews/js/books/getBookById.html
 // Change to this file will be lost next time the template file is compiled.
 //
-public class funGET extends cn.bran.play.JapidTemplateBase
+public class getBookById extends cn.bran.play.JapidTemplateBase
 {
-	public static final String sourceTemplate = "japidviews/js/funGET.html";
+	public static final String sourceTemplate = "japidviews/js/books/getBookById.html";
 	 private void initHeaders() {
 		putHeader("Content-Type", "text/html; charset=utf-8");
 		setContentType("text/html; charset=utf-8");
@@ -43,15 +43,15 @@ public class funGET extends cn.bran.play.JapidTemplateBase
 // - end of implicit fields with Play 
 
 
-	public funGET() {
+	public getBookById() {
 	super((StringBuilder)null);
 	initHeaders();
 	}
-	public funGET(StringBuilder out) {
+	public getBookById(StringBuilder out) {
 		super(out);
 		initHeaders();
 	}
-	public funGET(cn.bran.japid.template.JapidTemplateBaseWithoutPlay caller) {
+	public getBookById(cn.bran.japid.template.JapidTemplateBaseWithoutPlay caller) {
 		super(caller);
 	}
 
@@ -60,7 +60,7 @@ public class funGET extends cn.bran.play.JapidTemplateBase
 	public static final String[] argNames = new String[] {/* args of the template*/"errcode", "book",  };
 	public static final String[] argTypes = new String[] {/* arg types of the template*/"Integer", "Book",  };
 	public static final Object[] argDefaults= new Object[] {null,null, };
-	public static java.lang.reflect.Method renderMethod = getRenderMethod(japidviews.js.funGET.class);
+	public static java.lang.reflect.Method renderMethod = getRenderMethod(japidviews.js.books.getBookById.class);
 
 	{
 		setRenderMethod(renderMethod);
@@ -71,40 +71,40 @@ public class funGET extends cn.bran.play.JapidTemplateBase
 	}
 ////// end of named args stuff
 
-	private Integer errcode; // line 1, japidviews/js/funGET.html
-	private Book book; // line 1, japidviews/js/funGET.html
+	private Integer errcode; // line 1, japidviews/js/books/getBookById.html
+	private Book book; // line 1, japidviews/js/books/getBookById.html
 	public cn.bran.japid.template.RenderResult render(Integer errcode,Book book) {
 		this.errcode = errcode;
 		this.book = book;
-		try {super.layout();} catch (RuntimeException __e) { super.handleException(__e);} // line 1, japidviews/js/funGET.html
+		try {super.layout();} catch (RuntimeException __e) { super.handleException(__e);} // line 1, japidviews/js/books/getBookById.html
 		return getRenderResult();
 	}
 
 	public static cn.bran.japid.template.RenderResult apply(Integer errcode,Book book) {
-		return new funGET().render(errcode, book);
+		return new getBookById().render(errcode, book);
 	}
 
 	@Override protected void doLayout() {
 		beginDoLayout(sourceTemplate);
-;// line 1, funGET.html
+;// line 1, getBookById.html
 		p("<!DOCTYPE html>\n" + 
 "<html>\n" + 
 "<head>\n" + 
 "<meta charset=\"UTF-8\">\n" + 
 "</head>\n" + 
 "<body>\n" + 
-"    <p>error is: ");// line 1, funGET.html
-		try { Object o = escape(errcode); if (o.toString().length() ==0) { p(escape(null)); } else { p(o); } } catch (NullPointerException npe) { p(escape(null)); }// line 9, funGET.html
+"    <p>error is: ");// line 1, getBookById.html
+		try { Object o = escape(errcode); if (o.toString().length() ==0) { p(escape(null)); } else { p(o); } } catch (NullPointerException npe) { p(escape(null)); }// line 9, getBookById.html
 		p(" </p>\n" + 
-"    <p>");// line 9, funGET.html
-		try { Object o = escape(book.title); if (o.toString().length() ==0) { p(escape(null)); } else { p(o); } } catch (NullPointerException npe) { p(escape(null)); }// line 10, funGET.html
-		p(", ");// line 10, funGET.html
-		try { Object o = escape(book.year); if (o.toString().length() ==0) { p(escape(null)); } else { p(o); } } catch (NullPointerException npe) { p(escape(null)); }// line 10, funGET.html
-		p(", ");// line 10, funGET.html
-		try { Object o = escape(book.id); if (o.toString().length() ==0) { p(escape(null)); } else { p(o); } } catch (NullPointerException npe) { p(escape(null)); }// line 10, funGET.html
+"    <p>");// line 9, getBookById.html
+		try { Object o = escape(book.title); if (o.toString().length() ==0) { p(escape(null)); } else { p(o); } } catch (NullPointerException npe) { p(escape(null)); }// line 10, getBookById.html
+		p(", ");// line 10, getBookById.html
+		try { Object o = escape(book.year); if (o.toString().length() ==0) { p(escape(null)); } else { p(o); } } catch (NullPointerException npe) { p(escape(null)); }// line 10, getBookById.html
+		p(", ");// line 10, getBookById.html
+		try { Object o = escape(book.id); if (o.toString().length() ==0) { p(escape(null)); } else { p(o); } } catch (NullPointerException npe) { p(escape(null)); }// line 10, getBookById.html
 		p("</p>\n" + 
 "</body>\n" + 
-"</html>");// line 10, funGET.html
+"</html>");// line 10, getBookById.html
 		
 		endDoLayout(sourceTemplate);
 	}
