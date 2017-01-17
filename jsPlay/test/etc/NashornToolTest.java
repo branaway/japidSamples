@@ -3,6 +3,7 @@ package etc;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -55,4 +56,9 @@ public class NashornToolTest {
 		System.out.println(json);
 	}
 	
+	@Test
+	public void testTopLevelVars() {
+		List<String> vars = NashornTool.extractTopLevelVariables("'use strict'\n var a = 1; \n var b = function(){return {}}() \n function foo(){}");
+		System.out.println(vars.stream().collect(Collectors.joining(",")));
+	}
 }

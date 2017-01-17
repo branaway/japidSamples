@@ -44,18 +44,8 @@ public class NashornTool {
 	 * @return
 	 */
 	public static List<FunctionInfo> extractFuncs(String srcName, String sourceCode) {
-		Options options = new Options("nashorn");
-		options.set("anon.functions", true);
-		options.set("parse.only", true);
-		options.set("scripting", true);
 
-		ErrorManager errors = new ErrorManager();
-		Context context = new Context(options, errors, Thread.currentThread().getContextClassLoader());
-		Source source = Source.sourceFor(srcName, sourceCode);
-		Parser parser = new Parser(context.getEnv(), source, errors);
-		FunctionNode functionNode = parser.parse();
-		Block block = functionNode.getBody();
-		List<Statement> statements = block.getStatements();
+		List<Statement> statements = getStatements(sourceCode);
 
 		return statements.stream().filter(
 				st -> 
@@ -81,18 +71,7 @@ public class NashornTool {
 		if (!m.matches())
 			return null;
 		
-		Options options = new Options("nashorn");
-		options.set("anon.functions", true);
-		options.set("parse.only", true);
-		options.set("scripting", true);
-
-		ErrorManager errors = new ErrorManager();
-		Context context = new Context(options, errors, Thread.currentThread().getContextClassLoader());
-		Source source = Source.sourceFor("anon", src);
-		Parser parser = new Parser(context.getEnv(), source, errors);
-		FunctionNode functionNode = parser.parse();
-		Block block = functionNode.getBody();
-		List<Statement> statements = block.getStatements();
+		List<Statement> statements = getStatements(src);
 		if (statements.size() > 0) {
 			Statement stmt = statements.get(0);
 			if(stmt instanceof ExpressionStatement) {
@@ -113,6 +92,22 @@ public class NashornTool {
 		return null;
 	
 	}
+
+	private static List<Statement> getStatements(String src) {
+		Options options = new Options("nashorn");
+		options.set("anon.functions", true);
+		options.set("parse.only", true);
+		options.set("scripting", true);
+
+		ErrorManager errors = new ErrorManager();
+		Context context = new Context(options, errors, Thread.currentThread().getContextClassLoader());
+		Source source = Source.sourceFor("anon", src);
+		Parser parser = new Parser(context.getEnv(), source, errors);
+		FunctionNode functionNode = parser.parse();
+		Block block = functionNode.getBody();
+		List<Statement> statements = block.getStatements();
+		return statements;
+	}
 	
 	public static String getAst(String code){
 		Options options = new Options("nashorn");
@@ -125,5 +120,15 @@ public class NashornTool {
 		Context.setGlobal(contextm.createGlobal());
 		String json = ScriptUtils.parse(code, "<unknown>", false);
 		return json;
+	}
+	
+	public static List<String> extractTopLevelVariables(String code){
+		List<Statement> statements = getStatements(code);
+
+		return statements.stream()
+				.filter(st -> st instanceof VarNode)
+				.map(st -> ((VarNode) st).getName().getName())
+				.collect(Collectors.toList());
+	
 	}
 }

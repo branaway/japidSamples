@@ -49,22 +49,12 @@ var flash = Flash.current();
 var Session = Java.type("play.mvc.Scope.Session"); 
 var session = Session.current();
 
-
-
 var JavaUtils = Java.type("etc.JavaUtils");
-
 
 var params = request.params.data; // a Map object
 
-/**
- * parse out function parameter names
- */
-var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-var ARGUMENT_NAMES = /([^\s,]+)/g;
-function getParamNames(func) {
-  var fnStr = func.toString().replace(STRIP_COMMENTS, '');
-  var result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
-  if(result === null)
-     result = [];
-  return result;
-}
+//
+var JPA = Java.type("play.db.jpa.JPA");
+
+// java
+var File = Java.type("java.io.File");

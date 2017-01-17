@@ -3,11 +3,14 @@ package etc;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import play.db.jpa.JPABase;
+import play.db.jpa.JPAContext;
 import play.exceptions.UnexpectedException;
 import play.mvc.Http.Request;
 import play.mvc.Http.Response;
@@ -21,7 +24,13 @@ public class RenderJackson extends Result {
 	static ObjectMapper objectMapper = new ObjectMapper();
 	static {
 		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+		objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
+		objectMapper.addMixIn(JPABase.class, MixIn.class);
+	}
+	
+	static abstract class MixIn {
+		  @JsonIgnore abstract public JPAContext getJPAContext();  
 	}
 	
     public String json;

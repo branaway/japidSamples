@@ -9,6 +9,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +23,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.NumberUtils;
 
 import etc.NashornExecutionException;
@@ -29,9 +32,11 @@ import etc.NashornTool.FunctionInfo;
 import etc.RenderJackson;
 import etc.RenderJapid;
 import jdk.nashorn.api.scripting.JSObject;
+import jdk.nashorn.api.scripting.NashornException;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.runtime.ECMAException;
+import jdk.nashorn.internal.runtime.ParserException;
 import jdk.nashorn.internal.runtime.Undefined;
 import play.Play;
 import play.Play.Mode;
@@ -103,14 +108,14 @@ public class JSController extends cn.bran.play.JapidController {
 		// without
 		// extension
 		String fileName = jsRoot + "/" + _module + ".js";
-		File rawFile = new File(fileName);
-		if (Play.mode.isDev() && !rawFile.exists()) {
+		File srcFile = new File(fileName);
+		if (Play.mode.isDev() && !srcFile.exists()) {
 			notFound(fileName);
 		}
 
 		try {
 
-			JSObject module = getModule(_module, engine, rawFile);
+			JSObject module = getModule(_module, engine, srcFile);
 
 			// not implemented yet
 			// Object optionCoerceArgsMember =
@@ -155,14 +160,42 @@ public class JSController extends cn.bran.play.JapidController {
 				renderJapidWith(jsRoot + "/" + _module + "/" + _method, rj.args);
 			} else if (r instanceof Result) {
 				throw (Result) r;
-			} else {
+			} else if (r instanceof File) {
+				renderBinary((File) r);
+			} else if (r instanceof String) {
 				renderText(r);
+			} else if (r instanceof Number) {
+				renderText(r);
+			} else if (r instanceof java.util.Date || r instanceof java.sql.Date) {
+				renderText(r.toString());
+			} else if (r instanceof Undefined || r == null) {
+				renderText("");
+			} else if (r instanceof ScriptObjectMirror) {
+				// interpret it as Json
+				throw new RenderJackson(r);
+			} else if (r instanceof Model) {
+				throw new RenderJackson(r);
+			} else if (r instanceof Collection) {
+				throw new RenderJackson(r);
+			} else {
+				throw new RenderJackson(r);
 			}
 		} catch (FileNotFoundException e) {
 			notFound(_module);
 		} catch (ScriptException e) {
 			// TODO Auto-generated catch block
-			convertToPlayCompilationError(fileName, e);
+			// e.printStackTrace();
+			if (e.getCause() instanceof ECMAException) {
+				ECMAException cause = (ECMAException) e.getCause();
+				Throwable cause2 = cause.getCause();
+				if (cause2 instanceof ParserException) {
+					convertToPlayCompilationError(fileName, (ParserException) cause2);
+				} else {
+					convertToPlayCompilationError(fileName, cause);
+				}
+			} else {
+				convertToPlayCompilationError(fileName, e);
+			}
 		} catch (ECMAException e) {
 			// Object t = e.getThrown();
 			convertToPlayCompilationError(fileName, e);
@@ -191,7 +224,7 @@ public class JSController extends cn.bran.play.JapidController {
 		}
 	}
 
-	private static void convertToPlayCompilationError(String fileName, ECMAException e) {
+	private static void convertToPlayCompilationError(String fileName, NashornException e) {
 		String fname = e.getFileName();
 		if ("<eval>".equals(fname)) {
 			fname = fileName;
@@ -201,8 +234,7 @@ public class JSController extends cn.bran.play.JapidController {
 		// Object ecmaError = e.getEcmaError();
 		String tempName = fname;
 		VirtualFile vf = VirtualFile.fromRelativePath(tempName);
-		NashornExecutionException ce = new NashornExecutionException(vf, "\"" + e.getMessage() + "\"", line, col,
-				col + 1);
+		CompilationException ce = new CompilationException(vf, "\"" + e.getMessage() + "\"", line, col, col + 1);
 		throw ce;
 	}
 
@@ -237,6 +269,9 @@ public class JSController extends cn.bran.play.JapidController {
 			throws ScriptException, FileNotFoundException {
 		if (Play.mode.isDev()) {
 			_updateModelsHeader();
+			// is this too intrusive?
+			engine.getBindings(ScriptContext.ENGINE_SCOPE).clear();
+			
 			File modelsFile = new File(MODEL_HEADERS_JS);
 			if (modelsFile.exists()) {
 				// engine.eval(new FileReader(modelsFile));
@@ -249,9 +284,24 @@ public class JSController extends cn.bran.play.JapidController {
 			engine.eval("load('" + PLAY_HEADERS_JS + "');");
 			// remove old definition
 			engine.getBindings(ScriptContext.ENGINE_SCOPE).remove(moduleName);
+
 			evaluate(engine, rawFile);
-			JSObject module = parserModule(moduleName, engine);
-			return module;
+
+			JSObject module = (JSObject) engine.get(moduleName);
+			if (module == null) {
+				String what = rawFile + " does not define [" + moduleName + "]. ";
+				try {
+					what += "\nIt defines: "
+							+ NashornTool.extractTopLevelVariables(IOUtils.toString(new FileReader(rawFile)));
+				} catch (IOException e) {
+				} finally {
+					error(what);
+				}
+				return null; // to fool the compiler
+			} else {
+				return parserModule(moduleName, engine);
+			}
+
 		} else {
 			JSObject module = (JSObject) engine.get(moduleName);
 			if (module == null) {
@@ -265,7 +315,7 @@ public class JSController extends cn.bran.play.JapidController {
 	private static JSObject parserModule(String moduleName, ScriptEngine engine) {
 		JSObject module = (JSObject) engine.get(moduleName);
 		if (module == null) {
-			notFound("the module is not defined in " + moduleName);
+			notFound("the module is not defined" + moduleName);
 		} else {
 			// parse the function parameters
 			extractMethodInfo(moduleName, engine, module);
@@ -313,7 +363,11 @@ public class JSController extends cn.bran.play.JapidController {
 					return Arrays.stream(v).map(ve -> coerceArg(ve)).toArray();
 				}
 			} else {
-				return null;
+				// return null;
+				return Undefined.getUndefined();
+				// throw new RuntimeException("Missing argument for JavaScript
+				// function " + fi.name + ": " + k);// XXX should throw
+				// Execution error
 			}
 		}).toArray();
 	}
@@ -376,7 +430,9 @@ public class JSController extends cn.bran.play.JapidController {
 			return e.substring(1, e.length() - 1);
 		}
 
-		if (NumberUtils.isNumber(e)) {
+		if ("null".equals(e)) {
+			return null;
+		} else if (NumberUtils.isNumber(e)) {
 			return NumberUtils.createNumber(e);
 		} else {
 			try {
