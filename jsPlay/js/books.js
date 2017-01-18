@@ -9,7 +9,7 @@ var books = function() {
 		 * the default function
 		 */
 		index: function() {
-			return ("read the source of js/books.js to find out about the usage of JavaScripts as controllers");
+			return new File('readme.txt')
 		},
 		
 		/**

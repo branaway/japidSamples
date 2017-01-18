@@ -3,8 +3,7 @@
 # ~~~~
 
 # Home page
-GET     /groovy                                       Application.index
-GET     /                                JSController.process(_module:'books', _method:'index')
+GET     /                                JSController.process(_module:'books',_method:'index')
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
@@ -12,7 +11,7 @@ GET     /favicon.ico                            404
 # Map static resources from the /app/public folder to the /public path
 GET     /public/                                staticDir:public
 
-# javascript
+# javascript controllers
 *     /js/{_module}/{_method}             JSController.process
 
 
