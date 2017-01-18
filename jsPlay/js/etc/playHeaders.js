@@ -55,6 +55,41 @@ var params = request.params.data; // a Map object
 
 //
 var JPA = Java.type("play.db.jpa.JPA");
+/**
+ * some of the useful API by JPA
+ 	public static long count(Class<? extends GenericModel> modelClass, String query, Object... params) {
+	public static <T extends GenericModel> List<T>  findAll(Class<T> modelClass) {
+	public static <T extends GenericModel> T findById(Class<T> modelClass, Object id) {
+	public static <T extends GenericModel> List <T> findBy(Class<T> modelClass, String query, Object... params) {
+	public static JPAQuery find(Class<? extends GenericModel> modelClass, String query, Object... params) {
+	public static JPAQuery find(Class<? extends GenericModel> modelClass) {
+	public static JPAQuery all(Class<? extends GenericModel> modelClass) {
+	public static int delete(Class<? extends GenericModel> modelClass, String query, Object... params) {
+
+The JPAQuery offers a nice API:
+
+         * Retrieve all results of the query
+         * @return A list of entities
+
+        public <T> List<T> fetch() {
+
+         * Retrieve results of the query
+         * @param max Max results to fetch
+         * @return A list of entities
+        public <T> List<T> fetch(int max) {
+
+         * Set the position to start
+         * @param position Position of the first element
+         * @return A new query
+        public <T> JPAQuery from(int position) {
+
+         * Retrieve a page of result
+         * @param page Page number (start at 1)
+         * @param length (page length)
+         * @return a list of entities
+        public <T> List<T> fetch(int page, int length) {
+
+ */
 
 // java
 var File = Java.type("java.io.File");

@@ -22,6 +22,7 @@ Book(The Shawshank Redemption):
   votes: 234234
   rating: 9.2
   rank: 1
+  author: guillaume
   
 Book(The Godfather):
   title: The Godfather
@@ -29,6 +30,7 @@ Book(The Godfather):
   votes: 2334
   rating: 9.2
   rank: 2
+  author: たの
 
 Book(The Godfather II):
   title: The Godfather II
@@ -36,6 +38,7 @@ Book(The Godfather II):
   votes: 23343
   rating: 9.0
   rank: 3
+  author: たの
   
 Book(The Good):
   title: The Good
@@ -43,6 +46,7 @@ Book(The Good):
   votes: 233
   rating: 8.5
   rank: 4
+  author: warry
 
 Book(My Fair Lady):
   title: My Fair Lady
@@ -50,3 +54,4 @@ Book(My Fair Lady):
   votes: 2345
   rating: 8.2
   rank: 5
+  author: warry

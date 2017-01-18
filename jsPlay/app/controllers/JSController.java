@@ -26,6 +26,9 @@ import javax.script.ScriptException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.NumberUtils;
 
+import com.coveo.nashorn_modules.FilesystemFolder;
+import com.coveo.nashorn_modules.Require;
+
 import etc.NashornExecutionException;
 import etc.NashornTool;
 import etc.NashornTool.FunctionInfo;
@@ -33,6 +36,7 @@ import etc.RenderJackson;
 import etc.RenderJapid;
 import jdk.nashorn.api.scripting.JSObject;
 import jdk.nashorn.api.scripting.NashornException;
+import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import jdk.nashorn.internal.runtime.ECMAException;
@@ -51,6 +55,7 @@ import play.utils.Utils.AlternativeDateFormat;
 import play.vfs.VirtualFile;
 
 public class JSController extends cn.bran.play.JapidController {
+	private static final String COMMONJS = "js/commonjs";
 	private static final String _PARAMS = "_params";
 	public static String jsRoot = "js";
 	private static boolean shouldCoerceArg = Boolean
@@ -72,6 +77,15 @@ public class JSController extends cn.bran.play.JapidController {
 		System.setProperty("nashorn.typeInfo.maxFiles", "20000");
 		String[] options = new String[] { "-ot=true", "--language=es6" };
 		ScriptEngine engine = new NashornScriptEngineFactory().getScriptEngine(options);
+		// enable the "require" plugin
+		// https://github.com/coveo/nashorn-commonjs-modules
+		FilesystemFolder rootFolder = FilesystemFolder.create(new File(COMMONJS), "UTF-8");
+		try {
+			Require.enable((NashornScriptEngine) engine, rootFolder);
+		} catch (ScriptException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		if (Play.mode.isProd())
 			try {
 				// engine.eval(new FileReader(PLAY_HEADERS_JS));
@@ -98,7 +112,9 @@ public class JSController extends cn.bran.play.JapidController {
 	 * @throws NoSuchMethodException
 	 */
 	public static void process(String _module, String _method) throws NoSuchMethodException {
-
+		if (_method == null)
+			_method = "index";
+		
 		ScriptEngine engine = engineHolder.get();
 		if (_module.endsWith(".js"))
 			_module += _module.substring(0, _module.lastIndexOf(".js"));
@@ -166,8 +182,10 @@ public class JSController extends cn.bran.play.JapidController {
 				renderText(r);
 			} else if (r instanceof Number) {
 				renderText(r);
-			} else if (r instanceof java.util.Date || r instanceof java.sql.Date) {
-				renderText(r.toString());
+			} else if (r instanceof java.util.Date) {
+				renderText(((java.util.Date)r).getTime());
+			} else if (r instanceof java.sql.Date) {
+				renderText(((java.sql.Date)r).getTime());
 			} else if (r instanceof Undefined || r == null) {
 				renderText("");
 			} else if (r instanceof ScriptObjectMirror) {
@@ -203,24 +221,30 @@ public class JSController extends cn.bran.play.JapidController {
 			// e.printStackTrace();
 			// need to parser the line like:
 			// at
-			// jdk.nashorn.internal.scripts.Script$Recompilation$24$535A$\^eval\_.books$getBookById-1(<eval>:32)
-			List<StackTraceElement> goodLines = Arrays.stream(e.getStackTrace())
-					.filter(st -> st.toString().contains("scripts.Script$")).collect(Collectors.toList());
-			if (goodLines.size() > 0) {
-				StackTraceElement ste = goodLines.get(0);
-				Integer lineNum = ste.getLineNumber();
-				String fname = ste.getFileName();
-				if ("<eval>".equals(fname)) {
-					fname = fileName;
-				}
-				String tempName = fname;
-				VirtualFile vf = VirtualFile.fromRelativePath(tempName);
-				NashornExecutionException ce = new NashornExecutionException(vf, "\"" + e.getMessage() + "\"", lineNum,
-						0, 0);
-				throw ce;
-			} else {
-				throw e;
+			tryCaptureScriptError(fileName, e);
+		} catch (RuntimeException e) {
+			tryCaptureScriptError(fileName, e);
+		}
+	}
+
+	private static void tryCaptureScriptError(String fileName, RuntimeException e) {
+		// jdk.nashorn.internal.scripts.Script$Recompilation$24$535A$\^eval\_.books$getBookById-1(<eval>:32)
+		List<StackTraceElement> goodLines = Arrays.stream(e.getStackTrace())
+				.filter(st -> st.toString().contains("scripts.Script$")).collect(Collectors.toList());
+		if (goodLines.size() > 0) {
+			StackTraceElement ste = goodLines.get(0);
+			Integer lineNum = ste.getLineNumber();
+			String fname = ste.getFileName();
+			if ("<eval>".equals(fname)) {
+				fname = fileName;
 			}
+			String tempName = fname;
+			VirtualFile vf = VirtualFile.fromRelativePath(tempName);
+			NashornExecutionException ce = new NashornExecutionException(vf, "\"" + e.getMessage() + "\"", lineNum,
+					0, 0);
+			throw ce;
+		} else {
+			throw e;
 		}
 	}
 

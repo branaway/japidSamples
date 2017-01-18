@@ -4,7 +4,7 @@
 
 # Home page
 GET     /groovy                                       Application.index
-GET     /                                ApplicationJapid.index
+GET     /                                JSController.process(_module:'books', _method:'index')
 
 # Ignore favicon requests
 GET     /favicon.ico                            404

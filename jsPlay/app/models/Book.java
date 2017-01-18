@@ -31,5 +31,8 @@ public class Book extends Model {
     @Required
     public Float rating;
     
+    @ManyToOne
+    public Contact author;
+    
 }
 

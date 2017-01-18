@@ -29,8 +29,18 @@ public class RenderJackson extends Result {
 		objectMapper.addMixIn(JPABase.class, MixIn.class);
 	}
 	
+	/**
+	 * some of the JAPBase methods are annoying because they are in JavaBean access style.
+	 * 
+	 * Let's ignore them.
+	 * 
+	 * @author ran
+	 *
+	 */
 	static abstract class MixIn {
 		  @JsonIgnore abstract public JPAContext getJPAContext();  
+		  @JsonIgnore abstract public Object getEntityId();  
+		  @JsonIgnore abstract public boolean isPersistent();  
 	}
 	
     public String json;

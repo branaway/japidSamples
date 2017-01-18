@@ -3,26 +3,26 @@ load('js/fun.js');
 
 // the name must match that of this source file
 var books = function() {
-
-	function all() {
-		var books = Book.find("order by year", []).fetch();
-		return books;
-	}
-
-	function newBook(title, year) {
-		var book = new Book();
-		if (title)
-			book.title = title;
-		if (year)
-			book.year = parseInt(year);
-
-		book.save();
-
-		return book;
-	}
-
 	return {
-		all : all,
+		
+		/**
+		 * the default function
+		 */
+		index: function() {
+			return ("read the source of js/books.js to find out about the usage of JavaScripts as controllers");
+		},
+		
+		/**
+		 * path: http://localhost:9000/js/books/all
+		 */
+		all : function() {
+			var books = Book.find("order by year", []).fetch();
+			return books;
+		},
+
+		/**
+		 * path: http://localhost:9000/js/book/some?howMany=3
+		 */
 		some : function(howMany) {
 			var jpaQuery = JPA.find(Book.class);
 			if (howMany) {
@@ -38,6 +38,10 @@ var books = function() {
 				}
 			}
 		},
+
+		/**
+		 * path: http://localhost:9000/js/book/getBookById?id=3
+		 */
 		getBookById : function(id) {
 			// return foo(id); // 可以调用 ‘js/fun.js' 定义的函数
 			var book = Book.findById(id);
@@ -50,10 +54,57 @@ var books = function() {
 			else
 				return "ooops!";
 		},
-		newBook : newBook,
+		
+		/**
+		 * path: http://localhost:9000/js/book/newBook?title=My Book&year=1966
+		 * or use curl: curl --form title="My Book" --form year="1966" http://localhost:9000/js/books/newBook
+		 */
+		newBook : function (title, year) {
+			var book = new Book();
+			if (title)
+				book.title = title;
+			if (year)
+				book.year = parseInt(year);
+
+			book.save();
+
+			return book;
+		},
+		
+		/**
+		 * path: http://localhost:9000/js/book/getFile?name=/js/books.js
+		 */
 		getFile : function(name) {
 			return new File(name)
 		},
+		
+		/**
+		 * path: http://localhost:9000/js/book/jpa?year=1956
+		 */
+		jpa: function(year) {
+			// the findBy return all data immediately
+			var books = JPA.findBy(Book.class, "select title, year, rank from Book where year > ?1 order by year", year);
+			return books;
+		},
+
+		/**
+		 * path: http://localhost:9000/js/book/jpa2?fromRow=1&maxResults=2
+		 */
+		jpa2: function(fromRow, maxResults) {
+			// the find return a query which can be set limit the returned data
+			var query = JPA.find(Book.class, "select title, author.name from Book");
+			return query.from(fromRow).fetch(maxResults);
+		},
+		
+		/**
+		 * path: http://localhost:9000/js/book/jpa3
+		 */
+		jpa3: function() {
+			// would generate the all the combination of the two field values
+			return JPA.findBy(Book.class, "select b.title, c.name from Book b, Contact c");
+		},
+		
+		
 		optionCoerceArgs : true, // not used. use
 		// jscontroller.coerce.args=true in
 		// application.conf
@@ -68,6 +119,5 @@ var books = function() {
 			// return forbidden(functionName);
 			// return renderText("you don't have the right: " + functionName);
 		}
-
 	}
 }();
