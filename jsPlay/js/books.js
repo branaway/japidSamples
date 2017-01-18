@@ -21,7 +21,7 @@ var books = function() {
 		},
 
 		/**
-		 * path: http://localhost:9000/js/book/some?howMany=3
+		 * path: http://localhost:9000/js/books/some?howMany=3
 		 */
 		some : function(howMany) {
 			var jpaQuery = JPA.find(Book.class);
@@ -40,7 +40,7 @@ var books = function() {
 		},
 
 		/**
-		 * path: http://localhost:9000/js/book/getBookById?id=3
+		 * path: http://localhost:9000/js/books/getBookById?id=3
 		 */
 		getBookById : function(id) {
 			// return foo(id); // 可以调用 ‘js/fun.js' 定义的函数
@@ -56,15 +56,15 @@ var books = function() {
 		},
 		
 		/**
-		 * path: http://localhost:9000/js/book/newBook?title=My Book&year=1966
+		 * path: http://localhost:9000/js/books/newBook?title=My Book&year=1966
 		 * or use curl: curl --form title="My Book" --form year="1966" http://localhost:9000/js/books/newBook
 		 */
 		newBook : function (title, year) {
 			var book = new Book();
 			if (title)
-				book.title = title;
+				book['title'] = title; // set on an attribute
 			if (year)
-				book.year = parseInt(year);
+				book.year = year; // as direct javabean
 
 			book.save();
 
@@ -72,14 +72,31 @@ var books = function() {
 		},
 		
 		/**
-		 * path: http://localhost:9000/js/book/getFile?name=/js/books.js
+		 * sample path: 
+		 * http://localhost:9000/js/books/newBook2?jsonData={"title":"my book", "year":1999}
+		 * or use curl: curl --form title="My Book" --form year="1966" http://localhost:9000/js/books/newBook
+		 */
+		newBook2 : function (jsonData) {
+			var book = new Book();
+			var json = JSON.parse(jsonData)
+			for (var p in json) {
+				book[p] = json[p]
+			}
+
+			book.save();
+			
+			return book;
+		},
+		
+		/**
+		 * path: http://localhost:9000/js/books/getFile?name=/js/books.js
 		 */
 		getFile : function(name) {
 			return new File(name)
 		},
 		
 		/**
-		 * path: http://localhost:9000/js/book/jpa?year=1956
+		 * path: http://localhost:9000/js/books/jpa?year=1956
 		 */
 		jpa: function(year) {
 			// the findBy return all data immediately
@@ -88,7 +105,7 @@ var books = function() {
 		},
 
 		/**
-		 * path: http://localhost:9000/js/book/jpa2?fromRow=1&maxResults=2
+		 * path: http://localhost:9000/js/books/jpa2?fromRow=1&maxResults=2
 		 */
 		jpa2: function(fromRow, maxResults) {
 			// the find return a query which can be set limit the returned data
@@ -97,7 +114,7 @@ var books = function() {
 		},
 		
 		/**
-		 * path: http://localhost:9000/js/book/jpa3
+		 * path: http://localhost:9000/js/books/jpa3
 		 */
 		jpa3: function() {
 			// would generate the all the combination of the two field values
