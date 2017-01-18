@@ -104,10 +104,6 @@ var books = function() {
 			return JPA.findBy(Book.class, "select b.title, c.name from Book b, Contact c");
 		},
 		
-		
-		optionCoerceArgs : true, // not used. use
-		// jscontroller.coerce.args=true in
-		// application.conf
 		/**
 		 * 特殊interceptor function， 在真正函数调用之前被调用。 常用于安全检查。 如果欲立刻返回给用户错误信息
 		 * 可以简单粗暴返回 return Forbidden()。 也可以直接调用另外的函数， 例如 login（）。
